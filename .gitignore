@@ -90,6 +90,7 @@ Darwin*
 !constant/turbulenceProperties
 !system/
 !.gitignore
+!sim/simple_cylinder/*.msh
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
