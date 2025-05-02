@@ -91,6 +91,7 @@ Darwin*
 !system/
 !.gitignore
 !sim/simple_cylinder/*.msh
+!sim/simple_cylinder/*.geo
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
