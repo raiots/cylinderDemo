@@ -18,7 +18,7 @@ FoamFile
 dimensions      [0 1 -1 0 0 0 0];
 
 
-internalField   uniform (5 0 0);
+internalField   uniform (18.06 0 0);
 
 boundaryField
 {
@@ -29,7 +29,7 @@ boundaryField
     inlet
     {
         type            fixedValue;
-        value           uniform (5 0 0);
+        value           uniform (18.06 0 0);
     }
     topBot
     {
