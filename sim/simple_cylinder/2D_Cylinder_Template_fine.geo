@@ -229,7 +229,7 @@ Transfinite Curve {17, 31} = 102 Using Bump 1.0;
 
 // RADIALLY FROM CYLINDER IN BL
 //Transfinite Curve {9, 10, 11, 12} = 54 Using Progression 1.25;
-Transfinite Curve {9, 10, 11, 12} = 18 Using Progression 1.3;
+Transfinite Curve {9, 10, 11, 12} = 18 Using Progression 1.21;
 
 // RADIALLY FROM CYLINDER OUTSIDE BL 
 Transfinite Curve {13, 14, 15, 16} = 60 Using Progression 1.05;
