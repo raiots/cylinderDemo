@@ -88,7 +88,7 @@ for msh_file in msh_files:
     case.clean()
     case.fv_schemes["ddtSchemes"]["default"] = "backward"
     case.control_dict["application"] = "pimpleFoam"
-    case.control_dict["endTime"] = 5
+    case.control_dict["endTime"] = 5.0
     case.control_dict["deltaT"] = 1e-3
     case.decompose_par_dict["numberOfSubdomains"] = 4
 

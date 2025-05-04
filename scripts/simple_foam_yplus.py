@@ -1,3 +1,7 @@
+"""
+计算simpleFoam的y+平均值
+"""
+
 import foamlib
 from foamlib import FoamCase
 from pathlib import Path
