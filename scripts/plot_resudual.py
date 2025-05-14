@@ -89,9 +89,13 @@ def read_residuals(file_path):
 
 # 指定输入文件
 files = [
-    "data/task_2D_Cylinder_Template_fine/log.mpiexec",
-    "data/task_2D_Cylinder_Template/log.mpiexec",
-    "data/task_2D_Cylinder_Template_coarse/log.mpiexec"
+    # "data/task_2D_Cylinder_Template_fine/log.mpiexec",
+    # "data/task_2D_Cylinder_Template/log.mpiexec",
+    # "data/task_2D_Cylinder_Template_coarse/log.mpiexec"
+    "data/task_cfl_1/log.mpiexec",
+    "data/task_cfl_5/log.mpiexec",
+    "data/task_cfl_20/log.mpiexec",
+    "data/task_cfl_50/log.mpiexec"
 ]
 
 # 读取所有文件的数据

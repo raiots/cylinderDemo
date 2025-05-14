@@ -9,6 +9,18 @@ import shutil
 import re
 import glob
 from performance_metrics import PerformanceMetrics
+import urllib.request
+import urllib.parse
+
+def send_notification(message):
+    """发送通知到指定的URL"""
+    base_url = "https://sctapi.ftqq.com/SCT115608T0GArd9QdTr6QK70IjlLoMmwF.send"
+    params = {"title": message}
+    url = f"{base_url}?{urllib.parse.urlencode(params)}"
+    try:
+        urllib.request.urlopen(url)
+    except Exception as e:
+        print(f"发送通知失败: {e}")
 
 def modify_boundary_file(case_dir):
     """修改 boundary 文件中的边界类型"""
@@ -116,5 +128,8 @@ for cfl in cfl_values:
     # 收集并保存所有性能指标
     metrics.collect_all_metrics()
     metrics.save_to_csv()
+    
+    # 发送完成通知
+    send_notification(f"Task_CFL_{cfl}_Completed")
     
     print(f"Completed {task_name}") 

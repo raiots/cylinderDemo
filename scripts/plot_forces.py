@@ -126,19 +126,17 @@ def calculate_statistics(F):
     return F_avg, F_rms, C_avg, C_rms
 
 def get_mesh_type(file_path):
-    """从文件路径中提取网格类型"""
-    match = re.search(r'_(fine|coarse)', file_path)
+    """从文件路径中提取CFL文件夹名称"""
+    match = re.search(r'data/(task_cfl_\d+)', file_path)
     if match:
         return match.group(1)
     return 'default'
 
 def main():
     # 指定输入文件
-    files = [
-        "data/task_2D_Cylinder_Template/postProcessing/forces/0/force_0.dat",
-        "data/task_2D_Cylinder_Template_fine/postProcessing/forces/0/force_0.dat",
-        "data/task_2D_Cylinder_Template_coarse/postProcessing/forces/0/force_0.dat",
-    ]
+    base_path = "data/"
+    mesh_types = ["task_cfl_1", "task_cfl_5", "task_cfl_20", "task_cfl_50"]  # 空字符串代表默认网格
+    files = [f"{base_path}{mesh_type}/postProcessing/forces/0/force_0.dat" for mesh_type in mesh_types]
     
     # 创建图形
     fig_forces, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
@@ -146,10 +144,12 @@ def main():
     ax_fft = fig_fft.add_subplot(111)
     
     # 定义不同网格类型的线型和颜色
+    colors = ['k', 'r', 'b', 'g']  # 为每个CFL值定义不同的颜色
     styles = {
-        'default': {'color': 'k', 'linestyle': '-', 'label': 'Default mesh'},
-        'fine': {'color': 'r', 'linestyle': '-', 'label': 'Fine mesh'},
-        'coarse': {'color': 'b', 'linestyle': '-', 'label': 'Coarse mesh'}
+        'task_cfl_1': {'color': colors[0], 'linestyle': '-', 'label': 'CFL = 1'},
+        'task_cfl_5': {'color': colors[1], 'linestyle': '-', 'label': 'CFL = 5'},
+        'task_cfl_20': {'color': colors[2], 'linestyle': '-', 'label': 'CFL = 20'},
+        'task_cfl_50': {'color': colors[3], 'linestyle': '-', 'label': 'CFL = 50'}
     }
     
     # 抽样间隔
@@ -157,6 +157,7 @@ def main():
     
     # 处理每个文件
     for file_path in files:
+        print(file_path)
         # 使用正则表达式提取网格类型
         mesh_type = get_mesh_type(file_path)
         print(f"\n处理 {mesh_type} 网格的数据...")

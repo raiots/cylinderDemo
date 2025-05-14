@@ -94,6 +94,10 @@ Darwin*
 !sim/simple_cylinder/*.geo
 !sim/simple_cylinder_wall_modeled/*.msh
 !sim/simple_cylinder_wall_modeled/*.geo
+!sim/simple_cylinder_k/*.msh
+!sim/simple_cylinder_k/*.geo
+!sim/simple_cylinder_k_wall_modeled/*.msh
+!sim/simple_cylinder_k_wall_modeled/*.geo
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
