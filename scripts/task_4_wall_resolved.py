@@ -39,19 +39,19 @@ def modify_boundary_file(case_dir):
         f.write(content)
 
 # 定义要测试的CFL值
-cfl_values = [1, 5, 20, 50]
+cfl_values = [5]
 base_deltaT = 1e-3  # 基准deltaT值，对应CFL=23
 base_cfl = 23       # 基准CFL值
 
 # 使用模板网格文件
-template_msh = Path("sim/simple_cylinder_k_wall_modeled/2D_Cylinder_Template.msh")
+template_msh = Path("sim/simple_cylinder_k/2D_Cylinder_Template.msh")
 
 # 为每个CFL值创建一个任务
 for cfl in cfl_values:
     # 计算对应的deltaT
     deltaT = (base_deltaT * cfl) / base_cfl
     task_name = f"task_cfl_{cfl}"
-    source_dir = Path("sim/simple_cylinder_k_wall_modeled")
+    source_dir = Path("sim/simple_cylinder_k")
     target_dir = Path("sim") / task_name
     
     print(f"Processing CFL={cfl} -> {task_name}")
