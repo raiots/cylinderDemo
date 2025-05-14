@@ -44,7 +44,7 @@ boundaryField
     {
         //type            nutUSpaldingWallFunction;
 	  //type		kqRWallFunction;
-        type            omegaWallFunction;
+        type            fixedValue;
         value           uniform 0;
     }
 }
