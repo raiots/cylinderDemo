@@ -45,7 +45,7 @@ boundaryField
     {
        //type            nutLowReWallFunction;
 	   // type		        nutUSpaldingWallFunction;
-       type             nutUWallFunction
+        type            nutUWallFunction;
         value           uniform 0;
     }
 }
