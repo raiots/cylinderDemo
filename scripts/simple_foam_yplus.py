@@ -47,8 +47,8 @@ def get_yplus_average(case_dir):
 
 def main():
     # 获取所有.msh文件
-    source_dir = Path("sim/simple_cylinder")
-    msh_files = list(source_dir.glob("*.msh"))
+    source_dir = Path("sim/simple_cylinder_wall_modeled")
+    msh_files = list(source_dir.glob("*Template.msh"))
     results = {}
 
     # 为每个.msh文件创建一个任务
