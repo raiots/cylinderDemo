@@ -14,5 +14,5 @@ def clean_case(case_path):
     print(f"已清理案例目录: {case_path}")
 
 if __name__ == "__main__":
-    case_path = "sim/simple_cylinder"
+    case_path = "sim/simple_cylinder_wall_modeled"
     clean_case(case_path)
