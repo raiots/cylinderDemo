@@ -50,7 +50,9 @@ functions
 {
 	#include "forceCoeffs"
   #includeFunc yPlus
-//#include "fieldAvg"
+  #include "fieldAvg"
+  #includeFunc vorticity
+  #includeFunc CourantNo
 }
 
 
