@@ -126,37 +126,34 @@ def calculate_statistics(F):
     return F_avg, F_rms, C_avg, C_rms
 
 def get_mesh_type(file_path):
-    """从文件路径中提取CFL文件夹名称"""
-    match = re.search(r'data/(task_cfl_\d+)', file_path)
+    """从文件路径中提取网格类型名称"""
+    match = re.search(r'data/(task_[^/]+)', file_path)
     if match:
         return match.group(1)
-    return 'default'
+    return None
 
 def main():
     # 指定输入文件
     base_path = "data/"
-    mesh_types = ["task_cfl_1", "task_cfl_5", "task_cfl_20", "task_cfl_50"]  # 空字符串代表默认网格
+    mesh_types = ["task_cfl_5", "task_wall_modeled_cfl_5", "task_ko_wm_cfl_5", "task_ko_wr_cfl_5"]
     files = [f"{base_path}{mesh_type}/postProcessing/forces/0/force_0.dat" for mesh_type in mesh_types]
     
-    # 创建图形
-    fig_forces, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+    # 创建2x2的图形布局
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
     fig_fft = plt.figure(figsize=(10, 6))
     ax_fft = fig_fft.add_subplot(111)
     
     # 定义不同网格类型的线型和颜色
     colors = ['k', 'r', 'b', 'g']  # 为每个CFL值定义不同的颜色
     styles = {
-        'task_cfl_1': {'color': colors[0], 'linestyle': '-', 'label': 'CFL = 1'},
-        'task_cfl_5': {'color': colors[1], 'linestyle': '-', 'label': 'CFL = 5'},
-        'task_cfl_20': {'color': colors[2], 'linestyle': '-', 'label': 'CFL = 20'},
-        'task_cfl_50': {'color': colors[3], 'linestyle': '-', 'label': 'CFL = 50'}
+        'task_cfl_5': {'color': colors[0], 'linestyle': '-', 'label': 'SA Wall Resolved'},
+        'task_wall_modeled_cfl_5': {'color': colors[1], 'linestyle': '-', 'label': 'SA Wall Modeled'},
+        'task_ko_wm_cfl_5': {'color': colors[2], 'linestyle': '-', 'label': 'K-omega Wall Modeled'},
+        'task_ko_wr_cfl_5': {'color': colors[3], 'linestyle': '-', 'label': 'K-omega Wall Resolved'}
     }
     
-    # 抽样间隔
-    sample_interval = 10
-    
     # 处理每个文件
-    for file_path in files:
+    for i, file_path in enumerate(files):
         print(file_path)
         # 使用正则表达式提取网格类型
         mesh_type = get_mesh_type(file_path)
@@ -167,20 +164,35 @@ def main():
         if time is None:
             continue
             
-        # 数据抽样
-        time = time[::sample_interval]
-        total_force = total_force[::sample_interval]
-        pressure_force = pressure_force[::sample_interval]
-        viscous_force = viscous_force[::sample_interval]
+        # 选择3-3.5秒的数据
+        mask = (time >= 3.0) & (time <= 3.3)
+        time = time[mask]
+        total_force = total_force[mask]
+        pressure_force = pressure_force[mask]
+        viscous_force = viscous_force[mask]
         
-        print(f"数据点数: 原始 {len(total_force) * sample_interval} -> 抽样后 {len(total_force)}")
+        print(f"数据点数: {len(total_force)}")
+        
+        # 确定子图位置
+        row = i // 2
+        col = i % 2
+        ax = axes[row, col]
         
         # 绘制力的时间历程
         style = styles[mesh_type]
-        ax1.plot(time, total_force[:, 0], **style)
-        ax2.plot(time, total_force[:, 1], **style)
+        # 创建新的样式字典，不包含label和linestyle
+        plot_style = {k: v for k, v in style.items() if k not in ['label', 'linestyle']}
+        ax.plot(time, total_force[:, 0], **plot_style, label='Fx', linestyle='-')
+        ax.plot(time, total_force[:, 1], **plot_style, label='Fy', linestyle='--')
         
-        # 计算统计特性（使用原始数据）
+        # 设置子图标题和标签
+        ax.set_title(f'{style["label"]}')
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Force [N]')
+        ax.grid(True)
+        ax.legend()
+        
+        # 计算统计特性
         F_avg, F_rms, C_avg, C_rms = calculate_statistics(total_force)
         print(f"\n{mesh_type} 网格总力的统计结果:")
         print(f"力的平均值: {F_avg}")
@@ -188,26 +200,13 @@ def main():
         print(f"力系数平均值: {C_avg}")
         print(f"力系数RMS值: {C_rms}")
         
-        # 进行FFT分析（使用原始数据）
+        # 进行FFT分析
         dt = time[1] - time[0]
         print(f"\n警告 - FFT分析要求时间步长恒定！当前时间步长: {dt}")
         
         # 对Fy进行FFT分析
         freq, var = FFT_analysis(total_force[:, 1], dt)
         ax_fft.semilogx(freq, var, **style)
-    
-    # 设置力图的标题和标签
-    ax1.set_title('Force in x direction')
-    ax1.set_xlabel('Time (s)')
-    ax1.set_ylabel('Force [N]')
-    ax1.grid(True)
-    ax1.legend()
-    
-    ax2.set_title('Force in y direction')
-    ax2.set_xlabel('Time (s)')
-    ax2.set_ylabel('Force [N]')
-    ax2.grid(True)
-    ax2.legend()
     
     # 设置FFT图的标题和标签
     ax_fft.set_title('FFT Analysis of Forces')
@@ -217,10 +216,10 @@ def main():
     ax_fft.legend()
     
     # 调整布局并保存图片
-    fig_forces.tight_layout()
+    fig.tight_layout()
     fig_fft.tight_layout()
     
-    fig_forces.savefig('forces_comparison.png', dpi=300, bbox_inches='tight')
+    fig.savefig('forces_comparison.png', dpi=300, bbox_inches='tight')
     fig_fft.savefig('fft_comparison.png', dpi=300, bbox_inches='tight')
     
     print("\n所有文件处理完成！")

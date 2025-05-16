@@ -23,7 +23,7 @@ def modify_boundary_file(case_dir):
         f.write(content)
 
 # 定义要测试的CFL值
-cfl_values = [1, 5, 20, 50]
+cfl_values = [20]
 base_deltaT = 1e-3  # 基准deltaT值，对应CFL=23
 base_cfl = 23       # 基准CFL值
 

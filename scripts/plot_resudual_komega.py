@@ -21,14 +21,12 @@ def read_residuals(file_path):
     P = []  # 压力残差
     U = []  # x方向速度残差
     V = []  # y方向速度残差
-    nut = []  # 湍流场残差
     
     try:
         with open(file_path, 'r') as f:
             # 首先计算每个时间步的迭代次数
             p_cnt = 0
             U_cnt = 0
-            nut_cnt = 0
             
             # 读取第一个时间步来计算迭代次数
             for line in f:
@@ -41,8 +39,6 @@ def read_residuals(file_path):
                             p_cnt += 1
                         if 'Solving for Ux' in line:
                             U_cnt += 1
-                        if 'Solving for nuTilda' in line:
-                            nut_cnt += 1
                         if line.startswith('Time ='):
                             break
                     break
@@ -68,19 +64,14 @@ def read_residuals(file_path):
                 elif 'Solving for Uy' in line:
                     residual = float(line.split(',')[1].split()[-1])
                     V.append(residual)
-                elif 'Solving for nuTilda' in line:
-                    residual = float(line.split(',')[1].split()[-1])
-                    nut.append(residual)
         
         return {
             'T': np.array(T),
             'P': np.array(P),
             'U': np.array(U),
             'V': np.array(V),
-            'nut': np.array(nut),
             'p_cnt': p_cnt,
-            'U_cnt': U_cnt,
-            'nut_cnt': nut_cnt
+            'U_cnt': U_cnt
         }
     
     except FileNotFoundError:
@@ -89,21 +80,18 @@ def read_residuals(file_path):
 
 # 指定输入文件
 files = [
-    # "data/task_2D_Cylinder_Template_fine/log.mpiexec",
-    # "data/task_2D_Cylinder_Template/log.mpiexec",
-    # "data/task_2D_Cylinder_Template_coarse/log.mpiexec"
-    "data/task_cfl_1/log.mpiexec",
-    "data/task_cfl_5/log.mpiexec",
-    "data/task_cfl_20/log.mpiexec",
-    "data/task_cfl_50/log.mpiexec"
+    ("data/task_cfl_5/log.mpiexec", "SA Wall Resolved"),
+    ("data/task_wall_modeled_cfl_5/log.mpiexec", "SA Wall Modeled"),
+    ("data/task_ko_wm_cfl_5/log.mpiexec", "K-omega Wall Modeled"),
+    ("data/task_ko_wr_cfl_5/log.mpiexec", "K-omega Wall Resolved"),
 ]
 
 # 读取所有文件的数据
 all_data = []
-for file_path in files:
+for file_path, label in files:
     data = read_residuals(file_path)
     if data is not None:
-        all_data.append((os.path.basename(os.path.dirname(file_path)), data))
+        all_data.append((label, data))
 
 if not all_data:
     print("没有找到有效的数据文件")
@@ -111,7 +99,7 @@ if not all_data:
 
 # 设置绘图样式
 sns.set_style("whitegrid")
-fig, axes = plt.subplots(2, 2, figsize=(20, 10))  # 2:1的宽高比
+fig, axes = plt.subplots(3, 1, figsize=(20, 15))  # 3:1的宽高比
 
 # 定义颜色方案
 colors = ['k', 'r', 'b', 'g']
@@ -126,24 +114,20 @@ for case_name, data in all_data:
     P = data['P']
     U = data['U']
     V = data['V']
-    nut = data['nut']
     
     window_size_p = int(len(P) * 0.001)
     window_size_u = int(len(U) * 0.001)
     window_size_v = int(len(V) * 0.001)
-    window_size_nut = int(len(nut) * 0.001)
     
     P_smooth = moving_average(P, window_size_p)
     U_smooth = moving_average(U, window_size_u)
     V_smooth = moving_average(V, window_size_v)
-    nut_smooth = moving_average(nut, window_size_nut)
     
     smoothed_data.append({
         'case_name': case_name,
         'P_smooth': P_smooth,
         'U_smooth': U_smooth,
-        'V_smooth': V_smooth,
-        'nut_smooth': nut_smooth
+        'V_smooth': V_smooth
     })
 
 # 找到滤波后数据的最大最小值
@@ -152,13 +136,12 @@ for data in smoothed_data:
     all_smoothed_residuals.extend([
         data['P_smooth'].min(), data['P_smooth'].max(),
         data['U_smooth'].min(), data['U_smooth'].max(),
-        data['V_smooth'].min(), data['V_smooth'].max(),
-        data['nut_smooth'].min(), data['nut_smooth'].max()
+        data['V_smooth'].min(), data['V_smooth'].max()
     ])
 y_min, y_max = min(all_smoothed_residuals), max(all_smoothed_residuals)
 
-# 绘制压力残差对比 (左上)
-ax = axes[0, 0]
+# 绘制压力残差对比 (上)
+ax = axes[0]
 for i, smooth_data in enumerate(smoothed_data):
     case_name = smooth_data['case_name']
     P_smooth = smooth_data['P_smooth']
@@ -172,8 +155,8 @@ ax.set_ylim(y_min, y_max)
 ax.legend(fontsize=22)
 ax.grid(True)
 
-# 绘制Ux残差对比 (右上)
-ax = axes[0, 1]
+# 绘制Ux残差对比 (中)
+ax = axes[1]
 for i, smooth_data in enumerate(smoothed_data):
     case_name = smooth_data['case_name']
     U_smooth = smooth_data['U_smooth']
@@ -187,29 +170,14 @@ ax.set_ylim(y_min, y_max)
 ax.legend(fontsize=22)
 ax.grid(True)
 
-# 绘制Uy残差对比 (左下)
-ax = axes[1, 0]
+# 绘制Uy残差对比 (下)
+ax = axes[2]
 for i, smooth_data in enumerate(smoothed_data):
     case_name = smooth_data['case_name']
     V_smooth = smooth_data['V_smooth']
     x = np.linspace(0, x_max, len(V_smooth))
     ax.semilogy(x, V_smooth, color=colors[i], label=f'{case_name}', linewidth=1)
 ax.set_title('Velocity-y Residuals', fontsize=22)
-ax.set_xlabel('Time (s)', fontsize=22)
-ax.set_ylabel('Residual', fontsize=22)
-ax.set_xlim(x_min, x_max)
-ax.set_ylim(y_min, y_max)
-ax.legend(fontsize=22)
-ax.grid(True)
-
-# 绘制nuTilda残差对比 (右下)
-ax = axes[1, 1]
-for i, smooth_data in enumerate(smoothed_data):
-    case_name = smooth_data['case_name']
-    nut_smooth = smooth_data['nut_smooth']
-    x = np.linspace(0, x_max, len(nut_smooth))
-    ax.semilogy(x, nut_smooth, color=colors[i], label=f'{case_name}', linewidth=1)
-ax.set_title('Turbulent Viscosity Residuals', fontsize=22)
 ax.set_xlabel('Time (s)', fontsize=22)
 ax.set_ylabel('Residual', fontsize=22)
 ax.set_xlim(x_min, x_max)
